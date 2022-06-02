@@ -74,6 +74,7 @@ class Text(Object):
         GL.glDisable(GL.GL_DEPTH_TEST)
         size = self.topRight-self.bottomLeft
         size[0] /= len(self.value)
+        size[1] /= 4
         loc = GL.glGetUniformLocation(self.program, "size")
         if (loc == -1) :
             print("Pas de variable uniforme : size")

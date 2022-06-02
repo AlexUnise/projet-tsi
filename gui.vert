@@ -15,7 +15,7 @@ void main (void)
 
   //position dans l'espace ecran
   vec2 p = position.xy * size + start;
-
+  p.y+= 0.2;
   gl_Position = vec4(p, 0., 1.);
 
 }
