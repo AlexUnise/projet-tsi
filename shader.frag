@@ -9,7 +9,7 @@ in vec3 vnormale;
 in vec4 vcolor;
 in vec2 vtex;
 
-uniform sampler2D texture;
+uniform sampler2D t;
 
 vec3 light=vec3(0.5,0.5,5.0);
 
@@ -29,7 +29,7 @@ void main (void)
   vec4 white = vec4(1.0,1.0,1.0,0.0);
 
   //recuperation de la texture
-  vec4 color_texture = texture2D(texture, vtex);
+  vec4 color_texture = texture2D(t, vtex);
   vec4 color_final   = vcolor*color_texture;
 
   //couleur finale
