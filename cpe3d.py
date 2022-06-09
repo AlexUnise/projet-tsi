@@ -57,6 +57,13 @@ class Object3D(Object):
 
         super().draw()
 
+class Projectile(Object):
+    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, program, texture):
+        self.value = value
+        self.bottomLeft = bottomLeft
+        self.topRight = topRight
+        super().__init__(vao, nb_triangle, program, texture)
+
 class Camera:
     def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection = pyrr.matrix44.create_perspective_projection(60, 1, 0.01, 100)):
         self.transformation = transformation

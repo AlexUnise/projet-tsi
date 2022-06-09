@@ -18,7 +18,7 @@ def main():
 
     m = Mesh.load_obj('stegosaurus.obj') #importation de la maille du stegosaure
     m.normalize() #coordonnées du stégo en -1 et 1 pour x, y et z transformation proportionnelle, objet centré donc
-    m.apply_matrix(pyrr.matrix44.create_from_scale([2, 2, 2, 1])) # changement d'echelle de l'objet
+    m.apply_matrix(pyrr.matrix44.create_from_scale([1.5, 1.5, 1.5, 1])) # changement d'echelle de l'objet
     tr = Transformation3D()
     tr.translation.y = -np.amin(m.vertices, axis=0)[1] #les pieds de l'objet à 0, le 1 represente le y
     tr.translation.z = -5
@@ -37,7 +37,23 @@ def main():
     texture = glutils.load_texture('grass.jpg')
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D()) #objet 3d
     viewer.add_object(o)
-    
+
+    m = Mesh().load_obj('cube.obj') #creation d'un nouveau maillage
+    m.normalize() #coordonnées du stégo en -1 et 1 pour x, y et z transformation proportionnelle, objet centré donc
+    m.apply_matrix(pyrr.matrix44.create_from_scale([1, 1, 1, 1])) # changement d'echelle de l'objet
+    tr = Transformation3D()
+    tr.translation.y = -np.amin(m.vertices, axis=0)[1] #les pieds de l'objet à 0, le 1 represente le y
+    tr.translation.z = -5
+    tr.rotation_center.z = 0.2
+    texture = glutils.load_texture('stegosaurus.jpg') #lecture de l'image chargement sur le cpe et renvoie de l'id de limage sur le gpu
+    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+    viewer.add_object(o) # ajout des objets sur le viewer
+
+
+    texture = glutils.load_texture('grass.jpg')
+    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+    viewer.add_object(o) # ajout des objets sur le viewer
+
     #chargement du texte
     vao = Text.initalize_geometry()
     texture = glutils.load_texture('fontB.jpg') 
