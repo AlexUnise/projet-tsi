@@ -1,6 +1,8 @@
 import OpenGL.GL as GL
 import pyrr
 import numpy as np 
+import glutils
+
 
 class Transformation3D: 
     def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3()):
@@ -119,3 +121,20 @@ class Text(Object):
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER,index,GL.GL_STATIC_DRAW)
         return vao
 
+class Arme():
+    def __init__(self,vao,rang,program3d_id,nb_tr,viewer):
+        self.rang=rang
+        self.vao=vao
+        self.tr=Transformation3D()
+        self.texture=glutils.load_texture('stegosaurus.jpg')
+        self.program=program3d_id
+        self.nb_tr=nb_tr
+        self.viewer=viewer
+    def tir(self):
+        texture = glutils.load_texture('stegosaurus.jpg') #lecture de l'image chargement sur le cpe et renvoie de l'id de limage sur le gpu
+        o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+        self.viewer.add_object(o) # ajout des objets sur le viewer
+
+class Projectile():
+    def __init__(self,rang):
+        self.rang=rang

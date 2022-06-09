@@ -1,10 +1,11 @@
 from viewerGL import ViewerGL
 import glutils
 from mesh import Mesh
-from cpe3d import Object3D, Camera, Transformation3D, Text
+from cpe3d import Object3D, Camera, Transformation3D, Text, Arme
 import numpy as np
 import OpenGL.GL as GL
 import pyrr
+
 
 def main():
     viewer = ViewerGL()
@@ -41,6 +42,8 @@ def main():
     m = Mesh().load_obj('cube.obj') #creation d'un nouveau maillage
     m.normalize() #coordonnées du stégo en -1 et 1 pour x, y et z transformation proportionnelle, objet centré donc
     m.apply_matrix(pyrr.matrix44.create_from_scale([1, 1, 1, 1])) # changement d'echelle de l'objet
+    vao=m.load_to_gpu()
+    nb_tr=m.get_nb_triangles()
     tr = Transformation3D()
     tr.translation.y = -np.amin(m.vertices, axis=0)[1] #les pieds de l'objet à 0, le 1 represente le y
     tr.translation.z = -5
@@ -49,10 +52,8 @@ def main():
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
     viewer.add_object(o) # ajout des objets sur le viewer
 
+    weapon=Arme(vao,1,program3d_id,nb_tr,viewer)
 
-    texture = glutils.load_texture('grass.jpg')
-    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
-    viewer.add_object(o) # ajout des objets sur le viewer
 
     #chargement du texte
     vao = Text.initalize_geometry()

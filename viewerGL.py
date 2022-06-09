@@ -33,6 +33,8 @@ class ViewerGL:
         self.touch = {}
         self.tir=False
         self.angle=0
+        self.tir2=False
+        self.angle2=0
 
     def run(self):
         # boucle d'affichage
@@ -118,14 +120,22 @@ class ViewerGL:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
         
         if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
+            
             self.objs[-3].transformation.translation = self.objs[0].transformation.translation + pyrr.Vector3([0, 0, 0])
             self.angle=pyrr.matrix33.create_from_eulers(self.objs[0].transformation.rotation_euler)
             self.tir=True
 
         
         if self.tir==True:
+            norme=np.sqrt((self.objs[-3].transformation.translation.x-self.objs[-4].transformation.translation.x)**2  + (self.objs[-3].transformation.translation.y-self.objs[-4].transformation.translation.y)**2  + (self.objs[-3].transformation.translation.z-self.objs[-4].transformation.translation.z)**2 )
+            
             self.objs[-3].transformation.translation+= \
                 pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
+            if norme<=3:
+                self.tir=False
+
+
+
         self.cam.transformation.rotation_euler = self.objs[0].transformation.rotation_euler.copy() 
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += np.pi
         self.cam.transformation.rotation_center = self.objs[0].transformation.translation + self.objs[0].transformation.rotation_center
