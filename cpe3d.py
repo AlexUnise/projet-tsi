@@ -59,12 +59,6 @@ class Object3D(Object):
 
         super().draw()
 
-class Projectile(Object):
-    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, program, texture):
-        self.value = value
-        self.bottomLeft = bottomLeft
-        self.topRight = topRight
-        super().__init__(vao, nb_triangle, program, texture)
 
 class Camera:
     def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection = pyrr.matrix44.create_perspective_projection(60, 1, 0.01, 100)):
@@ -122,19 +116,46 @@ class Text(Object):
         return vao
 
 class Arme():
-    def __init__(self,vao,rang,program3d_id,nb_tr,viewer):
-        self.rang=rang
+    def __init__(self,vao,program3d_id,nb_tr,viewer):
         self.vao=vao
         self.tr=Transformation3D()
         self.texture=glutils.load_texture('stegosaurus.jpg')
         self.program=program3d_id
         self.nb_tr=nb_tr
         self.viewer=viewer
+        self.nb_objets=len(viewer.objs)
+        self.projectiles=[]
+        self.fire_rate=3
     def tir(self):
-        texture = glutils.load_texture('stegosaurus.jpg') #lecture de l'image chargement sur le cpe et renvoie de l'id de limage sur le gpu
         o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
         self.viewer.add_object(o) # ajout des objets sur le viewer
+        self.projectiles.append(Projectile(self.nb_objets+len(self.projectiles),self.viewer))
+        self.projectiles[-1].trajectoire()
+    def mouvement_projectile(self):
+        for i in self.projectiles:
+            i.mouvement()
+
 
 class Projectile():
-    def __init__(self,rang):
+    def __init__(self,rang,viewer):
         self.rang=rang
+        self.viewer=viewer
+        self.tir=False
+        self.temps_vol=0
+    def trajectoire(self):
+        self.viewer.objs[self.rang].transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0, 0])
+        self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
+        self.tir=True
+    def mouvement(self): 
+        if self.tir==True:
+            #norme=np.sqrt((self.objs[-1].transformation.translation.x-self.objs[-4].transformation.translation.x)**2  + (self.objs[-1].transformation.translation.y-self.objs[-4].transformation.translation.y)**2  + (self.objs[-3].transformation.translation.z-self.objs[-4].transformation.translation.z)**2 )
+            
+            self.viewer.objs[self.rang].transformation.translation+= \
+                pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
+            self.temps_vol+=1
+            if self.temps_vol==60:
+                self.tir=False
+                self.viewer.objs[self.rang].visible=False
+            #if norme<=3:
+            #    self.tir=False
+    

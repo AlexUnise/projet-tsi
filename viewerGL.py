@@ -64,6 +64,11 @@ class ViewerGL:
     def add_object(self, obj):
         self.objs.append(obj)
 
+
+
+    def add_weapon(self,weapon):
+        self.weapon=weapon
+
     def set_camera(self, cam):
         self.cam = cam
 
@@ -106,9 +111,9 @@ class ViewerGL:
             self.objs[0].transformation.translation -= \
                 pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.objs[0].transformation.rotation_euler), pyrr.Vector3([0, 0, 0.1]))
         if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
-            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] -= 0.1
+            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] -= 0.05
         if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
-            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
+            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] += 0.05
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
@@ -120,19 +125,16 @@ class ViewerGL:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
         
         if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
-            
-            self.objs[-3].transformation.translation = self.objs[0].transformation.translation + pyrr.Vector3([0, 0, 0])
-            self.angle=pyrr.matrix33.create_from_eulers(self.objs[0].transformation.rotation_euler)
-            self.tir=True
-
+                self.weapon.tir()
+              
+   
+        if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
+            self.tir=False
         
-        if self.tir==True:
-            norme=np.sqrt((self.objs[-3].transformation.translation.x-self.objs[-4].transformation.translation.x)**2  + (self.objs[-3].transformation.translation.y-self.objs[-4].transformation.translation.y)**2  + (self.objs[-3].transformation.translation.z-self.objs[-4].transformation.translation.z)**2 )
-            
-            self.objs[-3].transformation.translation+= \
-                pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
-            if norme<=3:
-                self.tir=False
+        
+        self.weapon.mouvement_projectile()
+        
+        
 
 
 
