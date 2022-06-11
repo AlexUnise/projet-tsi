@@ -64,7 +64,8 @@ class ViewerGL:
     def add_object(self, obj):
         self.objs.append(obj)
 
-
+    def remove_object(self,ind):#Pour pop les projectiles
+        self.objs.pop(ind)
 
     def add_weapon(self,weapon):
         self.weapon=weapon

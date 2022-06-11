@@ -118,7 +118,6 @@ class Text(Object):
 class Arme():
     def __init__(self,vao,program3d_id,nb_tr,viewer):
         self.vao=vao
-        self.tr=Transformation3D()
         self.texture=glutils.load_texture('stegosaurus.jpg')
         self.program=program3d_id
         self.nb_tr=nb_tr
@@ -127,35 +126,42 @@ class Arme():
         self.projectiles=[]
         self.fire_rate=3
     def tir(self):
+        self.tr=Transformation3D()
         o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
         self.viewer.add_object(o) # ajout des objets sur le viewer
-        self.projectiles.append(Projectile(self.nb_objets+len(self.projectiles),self.viewer))
+        self.projectiles.append(Projectile(o,self.viewer))
         self.projectiles[-1].trajectoire()
     def mouvement_projectile(self):
-        for i in self.projectiles:
-            i.mouvement()
+        for ind,proj in enumerate(self.projectiles):
+            if proj.detruit==False:
+                proj.mouvement()
+            else:
+                self.projectiles.pop(ind)
+                self.viewer.remove_object(len(self.viewer.objs)+ind-1)
 
 
 class Projectile():
-    def __init__(self,rang,viewer):
-        self.rang=rang
+    def __init__(self,o,viewer):
+        self.objet=o
         self.viewer=viewer
         self.tir=False
         self.temps_vol=0
+        self.detruit=False
     def trajectoire(self):
-        self.viewer.objs[self.rang].transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0, 0])
+        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0, 0])
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
         self.tir=True
     def mouvement(self): 
         if self.tir==True:
             #norme=np.sqrt((self.objs[-1].transformation.translation.x-self.objs[-4].transformation.translation.x)**2  + (self.objs[-1].transformation.translation.y-self.objs[-4].transformation.translation.y)**2  + (self.objs[-3].transformation.translation.z-self.objs[-4].transformation.translation.z)**2 )
             
-            self.viewer.objs[self.rang].transformation.translation+= \
+            self.objet.transformation.translation+= \
                 pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
             self.temps_vol+=1
-            if self.temps_vol==60:
+            if self.temps_vol==30:
                 self.tir=False
-                self.viewer.objs[self.rang].visible=False
+                self.objet.visible=False
+                self.detruit=True
             #if norme<=3:
             #    self.tir=False
     
