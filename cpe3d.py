@@ -126,13 +126,18 @@ class Arme():
         self.viewer=viewer
         self.nb_objets=len(viewer.objs)
         self.projectiles=[]
-        self.fire_rate=3
+        self.fire_rate=20
+        self.proj_intervalles=self.fire_rate
     def tir(self):
-        self.tr=Transformation3D()
-        o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
-        self.viewer.add_object(o) # ajout des objets sur le viewer
-        self.projectiles.append(Projectile(o,self.viewer))
-        self.projectiles[-1].trajectoire()
+        if self.proj_intervalles==self.fire_rate:
+            self.tr=Transformation3D()
+            o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+            self.viewer.add_object(o) # ajout des objets sur le viewer
+            self.projectiles.append(Projectile(o,self.viewer))
+            self.projectiles[-1].trajectoire()
+            self.proj_intervalles=0
+        else:
+            self.proj_intervalles+=1
     def mouvement_projectile(self):
         for ind,proj in enumerate(self.projectiles):
             if proj.detruit==False:
@@ -140,7 +145,7 @@ class Arme():
             else:
                 self.projectiles.pop(ind)
                 for ind,obj in enumerate(self.viewer.objs):
-                    if obj==proj:
+                    if obj==proj.objet:
                         self.viewer.remove_object(ind)
                         
                     #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
@@ -200,7 +205,7 @@ class Wave():
             if enem.detruit==True:
                 self.enemies.pop(ind)
                 for ind,obj in enumerate(self.viewer.objs):
-                    if obj==enem:
+                    if obj==enem.objet:
                         self.viewer.remove_object(ind)
                         #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
 class Enemy():

@@ -31,10 +31,8 @@ class ViewerGL:
 
         self.objs = []
         self.touch = {}
-        self.tir=False
         self.angle=0
-        self.tir2=False
-        self.angle2=0
+
 
     def run(self):
         # boucle d'affichage

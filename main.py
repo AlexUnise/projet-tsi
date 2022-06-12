@@ -52,7 +52,7 @@ def main():
 
     m = Mesh().load_obj('sphere.obj') #creation d'un nouveau maillage
     m.normalize() #coordonnées du stégo en -1 et 1 pour x, y et z transformation proportionnelle, objet centré donc
-    m.apply_matrix(pyrr.matrix44.create_from_scale([0.01, 0.01, 0.03, 1])) # changement d'echelle de l'objet
+    m.apply_matrix(pyrr.matrix44.create_from_scale([0.05, 0.05, 0.05, 1])) # changement d'echelle de l'objet
     vao=m.load_to_gpu()
     nb_tr=m.get_nb_triangles()
     tr = Transformation3D()
