@@ -32,11 +32,11 @@ class ViewerGL:
         self.objs = []
         self.touch = {}
         self.angle=0
-
+        self.game_over=False
 
     def run(self):
         # boucle d'affichage
-        while not glfw.window_should_close(self.window):
+        while not glfw.window_should_close(self.window) and self.game_over==False:
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
@@ -146,4 +146,4 @@ class ViewerGL:
         self.cam.transformation.rotation_euler = self.objs[0].transformation.rotation_euler.copy() 
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += np.pi
         self.cam.transformation.rotation_center = self.objs[0].transformation.translation + self.objs[0].transformation.rotation_center
-        self.cam.transformation.translation = self.objs[0].transformation.translation + pyrr.Vector3([-0.5, 0.25, 0.1])
+        self.cam.transformation.translation = self.objs[0].transformation.translation + pyrr.Vector3([-0.5, 0.30, 1.5])

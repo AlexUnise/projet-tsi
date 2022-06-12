@@ -68,6 +68,9 @@ class Camera:
         self.projection = projection
 
 class Text(Object):
+
+
+    
     def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, program, texture):
         self.value = value
         self.bottomLeft = bottomLeft
@@ -126,8 +129,9 @@ class Arme():
         self.viewer=viewer
         self.nb_objets=len(viewer.objs)
         self.projectiles=[]
-        self.fire_rate=20
+        self.fire_rate=30
         self.proj_intervalles=self.fire_rate
+
     def tir(self):
         if self.proj_intervalles==self.fire_rate:
             self.tr=Transformation3D()
@@ -147,9 +151,9 @@ class Arme():
                     if obj==proj.objet:
                         self.viewer.remove_object(ind)
                         
-                    #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
         if self.proj_intervalles<self.fire_rate:
             self.proj_intervalles+=1
+
 class Projectile():
     def __init__(self,o,viewer):
         self.objet=o
@@ -158,20 +162,18 @@ class Projectile():
         self.temps_vol=0
         self.detruit=False
     def trajectoire(self):
-        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0, 0])
+        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0.13, 0])
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
         self.tir=True
+
     def mouvement(self): 
         if self.tir==True:
-            #norme=np.sqrt((self.objs[-1].transformation.translation.x-self.objs[-4].transformation.translation.x)**2  + (self.objs[-1].transformation.translation.y-self.objs[-4].transformation.translation.y)**2  + (self.objs[-3].transformation.translation.z-self.objs[-4].transformation.translation.z)**2 )
-            
             self.objet.transformation.translation+= \
-                pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
+                pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 2]))
             self.temps_vol+=1
             if self.temps_vol==30:
                 self.destruction_projectile()
-            #if norme<=3:
-            #    self.tir=False
+
     def destruction_projectile(self):
         self.tir=False
         self.objet.visible=False
@@ -186,18 +188,23 @@ class Wave():
         self.viewer=viewer
         self.nb_objets=len(viewer.objs)
         self.enemies=[]
-        self.wave_size=3
+        self.wave_size=5
+
+
     def enemy_init(self):
         if len(self.enemies)<self.wave_size:
-            self.tr=Transformation3D()
-            o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
-            self.viewer.add_object(o) # ajout des objets sur le viewer
-            self.enemies.append(Enemy(o,self.viewer))
-            self.enemies[-1].spawn()
+            for nb in range(self.wave_size):
+                self.tr=Transformation3D()
+                o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+                self.viewer.add_object(o) # ajout des objets sur le viewer
+                self.enemies.append(Enemy(o,self.viewer,nb))
+                self.enemies[-1].spawn()
+
     def wave_movement(self):
         for ind,enem in enumerate(self.enemies):
             if enem.detruit==False:
                 enem.direction()
+
     def check_hit(self,projectiles):
         for ind,enem in enumerate(self.enemies):
             enem.enemy_hit(projectiles)
@@ -207,31 +214,36 @@ class Wave():
                 for ind,obj in enumerate(self.viewer.objs):
                     if obj==enem.objet:
                         self.viewer.remove_object(ind)
-                        #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
 class Enemy():
-    def __init__(self,o,viewer):
+    def __init__(self,o,viewer,position):
         self.objet=o
         self.viewer=viewer
         self.detruit=False
+        self.position=position
     def spawn(self):
         
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
-        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([randint(0,10), 0, 20]))
+        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([self.position*2, 0, 20]))
+  
     def direction(self): 
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
         self.objet.transformation.translation-= \
             pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.05*randint(1,3)]))
+   
     def enemy_hit(self,projectiles):
         for ind,proj in enumerate(projectiles):
             norme=\
                 np.sqrt((self.objet.transformation.translation.x-proj.objet.transformation.translation.x)**2  + (self.objet.transformation.translation.y-proj.objet.transformation.translation.y)**2  + (self.objet.transformation.translation.z-proj.objet.transformation.translation.z)**2 )
-            if norme<=1:
+            if norme<=1.5:
                 self.destruction_enemy(proj)
+    
     def joueur_hit(self):
         norme=\
                 np.sqrt((self.objet.transformation.translation.x-self.viewer.objs[0].transformation.translation.x)**2  + (self.objet.transformation.translation.y-self.viewer.objs[0].transformation.translation.y)**2  + (self.objet.transformation.translation.z-self.viewer.objs[0].transformation.translation.z)**2 )
-        if norme<=1:
-            print('dead')
+        if norme<=1.5:
+            self.viewer.objs[2].value='Mort'
+            self.viewer.game_over=True
+    
     def destruction_enemy(self,proj):
         self.tir=False
         self.detruit=True
