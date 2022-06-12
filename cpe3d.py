@@ -1,7 +1,9 @@
+from random import random
 import OpenGL.GL as GL
 import pyrr
 import numpy as np 
 import glutils
+from random import randint
 
 
 class Transformation3D: 
@@ -137,7 +139,11 @@ class Arme():
                 proj.mouvement()
             else:
                 self.projectiles.pop(ind)
-                self.viewer.remove_object(len(self.viewer.objs)+ind-1)
+                for ind,obj in enumerate(self.viewer.objs):
+                    if obj==proj:
+                        self.viewer.remove_object(ind)
+                        
+                    #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
 
 
 class Projectile():
@@ -159,9 +165,68 @@ class Projectile():
                 pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.5]))
             self.temps_vol+=1
             if self.temps_vol==30:
-                self.tir=False
-                self.objet.visible=False
-                self.detruit=True
+                self.destruction_projectile()
             #if norme<=3:
             #    self.tir=False
+    def destruction_projectile(self):
+        self.tir=False
+        self.objet.visible=False
+        self.detruit=True
+
+class Wave():
+    def __init__(self,vao,program3d_id,nb_tr,viewer):
+        self.vao=vao
+        self.texture=glutils.load_texture('stegosaurus.jpg')
+        self.program=program3d_id
+        self.nb_tr=nb_tr
+        self.viewer=viewer
+        self.nb_objets=len(viewer.objs)
+        self.enemies=[]
+        self.wave_size=3
+    def enemy_init(self):
+        if len(self.enemies)<self.wave_size:
+            self.tr=Transformation3D()
+            o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
+            self.viewer.add_object(o) # ajout des objets sur le viewer
+            self.enemies.append(Enemy(o,self.viewer))
+            self.enemies[-1].spawn()
+    def wave_movement(self):
+        for ind,enem in enumerate(self.enemies):
+            if enem.detruit==False:
+                enem.direction()
+    def check_enemy_hit(self,projectiles):
+        for ind,enem in enumerate(self.enemies):
+            enem.enemy_hit(projectiles)
+            if enem.detruit==True:
+                self.enemies.pop(ind)
+                for ind,obj in enumerate(self.viewer.objs):
+                    if obj==enem:
+                        self.viewer.remove_object(ind)
+                        #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
+class Enemy():
+    def __init__(self,o,viewer):
+        self.objet=o
+        self.viewer=viewer
+        self.detruit=False
+    def spawn(self):
+        
+        self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
+        self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([randint(0,10), 0, 20]))
+    def direction(self): 
+        self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
+        self.objet.transformation.translation-= \
+            pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.05*randint(1,3)]))
+    def enemy_hit(self,projectiles):
+        for ind,proj in enumerate(projectiles):
+            norme=\
+                np.sqrt((self.objet.transformation.translation.x-proj.objet.transformation.translation.x)**2  + (self.objet.transformation.translation.y-proj.objet.transformation.translation.y)**2  + (self.objet.transformation.translation.z-proj.objet.transformation.translation.z)**2 )
+            if norme<=3:
+                self.destruction_enemy(proj)
+
+    def destruction_enemy(self,proj):
+        self.tir=False
+        self.detruit=True
+        self.objet.visible=False
+        proj.destruction_projectile()
+        
     

@@ -70,6 +70,10 @@ class ViewerGL:
     def add_weapon(self,weapon):
         self.weapon=weapon
 
+    def add_wave(self,wave):
+        self.wave=wave
+
+
     def set_camera(self, cam):
         self.cam = cam
 
@@ -126,14 +130,16 @@ class ViewerGL:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
         
         if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
-                self.weapon.tir()
+            self.weapon.tir()
               
    
         if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
-            self.tir=False
+            self.wave.enemy_init()
         
         
         self.weapon.mouvement_projectile()
+        self.wave.wave_movement()
+        self.wave.check_enemy_hit(self.weapon.projectiles)
         
         
 
