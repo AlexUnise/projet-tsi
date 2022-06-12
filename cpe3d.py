@@ -136,8 +136,7 @@ class Arme():
             self.projectiles.append(Projectile(o,self.viewer))
             self.projectiles[-1].trajectoire()
             self.proj_intervalles=0
-        else:
-            self.proj_intervalles+=1
+        
     def mouvement_projectile(self):
         for ind,proj in enumerate(self.projectiles):
             if proj.detruit==False:
@@ -149,8 +148,8 @@ class Arme():
                         self.viewer.remove_object(ind)
                         
                     #self.viewer.remove_object(len(self.viewer.objs)+ind-1)
-
-
+        if self.proj_intervalles<self.fire_rate:
+            self.proj_intervalles+=1
 class Projectile():
     def __init__(self,o,viewer):
         self.objet=o
@@ -199,9 +198,10 @@ class Wave():
         for ind,enem in enumerate(self.enemies):
             if enem.detruit==False:
                 enem.direction()
-    def check_enemy_hit(self,projectiles):
+    def check_hit(self,projectiles):
         for ind,enem in enumerate(self.enemies):
             enem.enemy_hit(projectiles)
+            enem.joueur_hit()
             if enem.detruit==True:
                 self.enemies.pop(ind)
                 for ind,obj in enumerate(self.viewer.objs):
@@ -225,9 +225,13 @@ class Enemy():
         for ind,proj in enumerate(projectiles):
             norme=\
                 np.sqrt((self.objet.transformation.translation.x-proj.objet.transformation.translation.x)**2  + (self.objet.transformation.translation.y-proj.objet.transformation.translation.y)**2  + (self.objet.transformation.translation.z-proj.objet.transformation.translation.z)**2 )
-            if norme<=3:
+            if norme<=1:
                 self.destruction_enemy(proj)
-
+    def joueur_hit(self):
+        norme=\
+                np.sqrt((self.objet.transformation.translation.x-self.viewer.objs[0].transformation.translation.x)**2  + (self.objet.transformation.translation.y-self.viewer.objs[0].transformation.translation.y)**2  + (self.objet.transformation.translation.z-self.viewer.objs[0].transformation.translation.z)**2 )
+        if norme<=1:
+            print('dead')
     def destruction_enemy(self,proj):
         self.tir=False
         self.detruit=True

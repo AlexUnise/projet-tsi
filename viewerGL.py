@@ -114,9 +114,9 @@ class ViewerGL:
             self.objs[0].transformation.translation -= \
                 pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.objs[0].transformation.rotation_euler), pyrr.Vector3([0, 0, 0.1]))
         if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
-            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] -= 0.05
+            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] -= 0.04
         if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
-            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] += 0.05
+            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] += 0.04
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
@@ -137,7 +137,7 @@ class ViewerGL:
         
         self.weapon.mouvement_projectile()
         self.wave.wave_movement()
-        self.wave.check_enemy_hit(self.weapon.projectiles)
+        self.wave.check_hit(self.weapon.projectiles)
         
         
 
