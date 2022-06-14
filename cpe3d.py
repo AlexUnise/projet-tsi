@@ -128,15 +128,15 @@ class Arme():
         self.nb_tr=nb_tr
         self.viewer=viewer
         self.nb_objets=len(viewer.objs)
-        self.projectiles=[]
-        self.fire_rate=30
+        self.projectiles=[]# Liste des projectiles
+        self.fire_rate=20 #cadence de tir
         self.proj_intervalles=self.fire_rate
 
     def tir(self):
         if self.proj_intervalles==self.fire_rate:
             self.tr=Transformation3D()
-            o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
-            self.viewer.add_object(o) # ajout des objets sur le viewer
+            o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) 
+            self.viewer.add_object(o) 
             self.projectiles.append(Projectile(o,self.viewer))
             self.projectiles[-1].trajectoire()
             self.proj_intervalles=0
@@ -150,7 +150,7 @@ class Arme():
                 for ind,obj in enumerate(self.viewer.objs):
                     if obj==proj.objet:
                         self.viewer.remove_object(ind)
-                        
+                            
         if self.proj_intervalles<self.fire_rate:
             self.proj_intervalles+=1
 
@@ -161,6 +161,7 @@ class Projectile():
         self.tir=False
         self.temps_vol=0
         self.detruit=False
+        self.angle=0
     def trajectoire(self):
         self.objet.transformation.translation = self.viewer.objs[0].transformation.translation.copy() + pyrr.Vector3([0, 0.13, 0])
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
@@ -195,8 +196,8 @@ class Wave():
         if len(self.enemies)<self.wave_size:
             for nb in range(self.wave_size):
                 self.tr=Transformation3D()
-                o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr) # teq au travail fait par au vao et vbo, les infos du stegosaure sont sur le gpu avec load to gpu, le cpu en a plus besoin
-                self.viewer.add_object(o) # ajout des objets sur le viewer
+                o = Object3D(self.vao, self.nb_tr, self.program, self.texture, self.tr)
+                self.viewer.add_object(o) 
                 self.enemies.append(Enemy(o,self.viewer,nb))
                 self.enemies[-1].spawn()
 
@@ -229,25 +230,31 @@ class Enemy():
         self.angle=pyrr.matrix33.create_from_eulers(self.viewer.objs[0].transformation.rotation_euler.copy())
         self.objet.transformation.translation-= \
             pyrr.matrix33.apply_to_vector(self.angle, pyrr.Vector3([0, 0, 0.05*randint(1,3)]))
-   
-    def enemy_hit(self,projectiles):
-        for ind,proj in enumerate(projectiles):
-            norme=\
-                np.sqrt((self.objet.transformation.translation.x-proj.objet.transformation.translation.x)**2  + (self.objet.transformation.translation.y-proj.objet.transformation.translation.y)**2  + (self.objet.transformation.translation.z-proj.objet.transformation.translation.z)**2 )
-            if norme<=1.5:
-                self.destruction_enemy(proj)
-    
-    def joueur_hit(self):
-        norme=\
-                np.sqrt((self.objet.transformation.translation.x-self.viewer.objs[0].transformation.translation.x)**2  + (self.objet.transformation.translation.y-self.viewer.objs[0].transformation.translation.y)**2  + (self.objet.transformation.translation.z-self.viewer.objs[0].transformation.translation.z)**2 )
-        if norme<=1.5:
-            self.viewer.objs[2].value='Mort'
-            self.viewer.game_over=True
-    
+
     def destruction_enemy(self,proj):
         self.tir=False
         self.detruit=True
         self.objet.visible=False
         proj.destruction_projectile()
+   
+    def enemy_hit(self,projectiles):
+        coordO=self.objet.transformation.translation
+        for ind,proj in enumerate(projectiles):
+            coordP=proj.objet.transformation.translation
+            norme=\
+                np.sqrt((coordO.x-coordP.x)**2  + (coordO.y-coordP.y)**2  + (coordO.z-coordP.z)**2 )
+            if norme<=1.5:
+                self.destruction_enemy(proj)
+    
+    def joueur_hit(self):
+        coordO=self.objet.transformation.translation
+        coordP=self.viewer.objs[0].transformation.translation
+        norme=\
+                np.sqrt((coordO.x-coordP.x)**2  + (coordO.y-coordP.y)**2  + (coordO.z-coordP.z)**2 )
+        if norme<=1.5:
+            self.viewer.objs[2].value='Mort'
+            self.viewer.game_over=True
+    
+    
         
     
